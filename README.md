@@ -67,6 +67,7 @@ Para información detallada, consulta la documentación en la carpeta [`docs/`](
 ### 📖 Guías Principales
 - [**Guía de Instalación**](./docs/INSTALLATION.md) - Configuración completa del entorno
 - [**Arquitectura del Sistema**](./docs/ARCHITECTURE.md) - Diseño y estructura técnica
+- [**Diagrama de Comunicación**](./docs/COMUNICACION.md) - Flujo de datos y comunicación
 - [**Guía de Desarrollo**](./docs/DEVELOPMENT.md) - Convenciones y mejores prácticas
 
 ### 🔧 Configuración Técnica
@@ -114,6 +115,7 @@ Para reportar issues o contribuir al proyecto:
 - [Documentación Completa](./docs/)
 - [Configuración de Desarrollo](./docs/DEVELOPMENT.md)
 - [Arquitectura Técnica](./docs/ARCHITECTURE.md)
+- [Diagrama de Comunicación](./docs/COMUNICACION.md)
 - [Guía de Instalación](./docs/INSTALLATION.md)
 
 ---
