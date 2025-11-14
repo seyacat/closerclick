@@ -1,7 +1,14 @@
 /**
  * Métodos HTTP soportados
  */
-export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' | 'HEAD' | 'OPTIONS';
+export type HttpMethod =
+  | 'GET'
+  | 'POST'
+  | 'PUT'
+  | 'DELETE'
+  | 'PATCH'
+  | 'HEAD'
+  | 'OPTIONS';
 
 /**
  * Headers HTTP como objeto clave-valor
@@ -30,7 +37,7 @@ export interface HttpResponse {
   statusCode: number;
   statusMessage?: string;
   headers: HttpHeaders;
-  body: string;
+  body: string | Buffer; // Puede ser string para archivos pequeños o Buffer para archivos grandes
 }
 
 /**

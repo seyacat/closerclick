@@ -106,20 +106,43 @@ function handleHttpRequest(request) {
     const ext = path.extname(filePath).toLowerCase();
     const contentType = getContentType(ext);
 
-    // Enviar respuesta con ArrayBuffer
-    socket.emit('message', {
-      type: 'response',
-      payload: {
-        id: request.id,
-        statusCode: 200,
-        statusMessage: 'OK',
-        headers: {
-          'content-type': contentType,
-          'content-length': content.length.toString()
-        },
-        body: content // Enviar el Buffer directamente (se serializa como ArrayBuffer)
-      }
-    });
+    // Estrategia híbrida para archivos grandes
+    const MAX_STRING_SIZE = 1024 * 1024; // 1MB
+    
+    if (content.length < MAX_STRING_SIZE) {
+      // Archivos pequeños: enviar como string UTF-8
+      console.log(`Enviando archivo pequeño (${content.length} bytes) como string`);
+      socket.emit('message', {
+        type: 'response',
+        payload: {
+          id: request.id,
+          statusCode: 200,
+          statusMessage: 'OK',
+          headers: {
+            'content-type': contentType,
+            'content-length': content.length.toString()
+          },
+          body: content.toString('utf8')
+        }
+      });
+    } else {
+      // Archivos grandes: enviar como ArrayBuffer con binary attachment
+      console.log(`Enviando archivo grande (${content.length} bytes) como ArrayBuffer`);
+      socket.emit('message', {
+        type: 'response',
+        payload: {
+          id: request.id,
+          statusCode: 200,
+          statusMessage: 'OK',
+          headers: {
+            'content-type': contentType,
+            'content-length': content.length.toString(),
+            'x-binary-data': 'true' // Indicar que el body viene como binary attachment
+          },
+          body: null // El body real viene como binary attachment
+        }
+      }, content); // Binary attachment
+    }
 
     console.log('Respuesta enviada para:', filePath);
 
@@ -133,18 +156,38 @@ function handleHttpRequest(request) {
  * Envía una respuesta de error
  */
 function sendErrorResponse(requestId, statusCode, message) {
-  socket.emit('message', {
-    type: 'response',
-    payload: {
-      id: requestId,
-      statusCode: statusCode,
-      statusMessage: message,
-      headers: {
-        'content-type': 'text/plain'
-      },
-      body: Buffer.from(message) // Enviar el Buffer directamente
-    }
-  });
+  const errorBuffer = Buffer.from(message);
+  
+  if (errorBuffer.length < 1024 * 1024) {
+    // Errores pequeños como string
+    socket.emit('message', {
+      type: 'response',
+      payload: {
+        id: requestId,
+        statusCode: statusCode,
+        statusMessage: message,
+        headers: {
+          'content-type': 'text/plain'
+        },
+        body: message
+      }
+    });
+  } else {
+    // Errores grandes como binary (aunque es raro)
+    socket.emit('message', {
+      type: 'response',
+      payload: {
+        id: requestId,
+        statusCode: statusCode,
+        statusMessage: message.substring(0, 100) + '...',
+        headers: {
+          'content-type': 'text/plain',
+          'x-binary-data': 'true'
+        },
+        body: null
+      }
+    }, errorBuffer);
+  }
 }
 
 /**

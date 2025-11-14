@@ -20,6 +20,7 @@ import type { WebSocketMessage, HttpResponse } from '../types/websocket.types';
     origin: '*', // En producción, configurar orígenes específicos
     credentials: true,
   },
+  maxHttpBufferSize: 10 * 1024 * 1024, // 10MB para archivos grandes
 })
 export class WebSocketGatewayHandler
   implements OnGatewayConnection, OnGatewayDisconnect
@@ -74,6 +75,7 @@ export class WebSocketGatewayHandler
   handleMessage(
     @MessageBody() message: WebSocketMessage,
     @ConnectedSocket() client: Socket,
+    ...attachments: any[]
   ): void {
     this.logger.debug(`Mensaje recibido de ${client.id}: ${message.type}`);
 
@@ -81,9 +83,25 @@ export class WebSocketGatewayHandler
       case 'response':
         // Procesar respuesta HTTP
         if (message.payload) {
-          this.connectionManager.handleResponse(
-            message.payload as HttpResponse,
-          );
+          const response = message.payload as HttpResponse;
+
+          // Verificar si hay binary attachments
+          const headers = response.headers as Record<string, string>;
+          const hasBinaryData =
+            response.headers && headers['x-binary-data'] === 'true';
+
+          if (hasBinaryData && !response.body) {
+            // El body viene como binary attachment
+            if (attachments.length > 0 && attachments[0]) {
+              // El primer attachment es el body binario
+              response.body = attachments[0] as Buffer;
+              this.logger.debug(
+                `Binary attachment recibido: ${response.body.length} bytes`,
+              );
+            }
+          }
+
+          this.connectionManager.handleResponse(response);
         }
         break;
 
