@@ -48,7 +48,41 @@ socket.on('message', (message) => {
  * Maneja un request HTTP recibido del servidor
  */
 function handleHttpRequest(request) {
-  console.log('Request HTTP recibido:', request.method, request.path);
+  console.log('=== REQUEST RECIBIDO ===');
+  console.log('Método:', request.method);
+  console.log('Path:', request.path);
+  console.log('ID del request:', request.id);
+  
+  // Log de headers
+  if (request.headers && Object.keys(request.headers).length > 0) {
+    console.log('Headers recibidos:');
+    Object.entries(request.headers).forEach(([key, value]) => {
+      console.log(`  ${key}: ${value}`);
+    });
+  }
+  
+  // Log de query parameters
+  if (request.query && Object.keys(request.query).length > 0) {
+    console.log('Query parameters:');
+    Object.entries(request.query).forEach(([key, value]) => {
+      console.log(`  ${key}: ${value}`);
+    });
+  }
+  
+  // Log del body si existe
+  if (request.body) {
+    console.log('Body recibido:');
+    console.log('  Tipo:', typeof request.body);
+    console.log('  Longitud:', request.body.length || request.body.byteLength);
+    
+    // Si es un Buffer/ArrayBuffer, mostrar primeros bytes como ejemplo
+    if (Buffer.isBuffer(request.body)) {
+      console.log('  Primeros 50 bytes (hex):', request.body.slice(0, 50).toString('hex'));
+    } else if (typeof request.body === 'string') {
+      console.log('  Contenido (primeros 100 caracteres):', request.body.substring(0, 100));
+    }
+  }
+  console.log('========================');
 
   try {
     // Determinar el archivo a servir
@@ -65,14 +99,14 @@ function handleHttpRequest(request) {
       return;
     }
 
-    // Leer el archivo
+    // Leer el archivo como Buffer (equivalente a ArrayBuffer en Node.js)
     const content = fs.readFileSync(fullPath);
     
     // Determinar content-type
     const ext = path.extname(filePath).toLowerCase();
     const contentType = getContentType(ext);
 
-    // Enviar respuesta
+    // Enviar respuesta con ArrayBuffer
     socket.emit('message', {
       type: 'response',
       payload: {
@@ -83,7 +117,7 @@ function handleHttpRequest(request) {
           'content-type': contentType,
           'content-length': content.length.toString()
         },
-        body: content.toString('base64')
+        body: content // Enviar el Buffer directamente (se serializa como ArrayBuffer)
       }
     });
 
@@ -108,7 +142,7 @@ function sendErrorResponse(requestId, statusCode, message) {
       headers: {
         'content-type': 'text/plain'
       },
-      body: Buffer.from(message).toString('base64')
+      body: Buffer.from(message) // Enviar el Buffer directamente
     }
   });
 }

@@ -37,12 +37,27 @@ export class ProxyController {
     this.logger.log(`Request para IP ${targetIp}: ${req.method} ${pathAfterIp}`);
 
     try {
+      // Preparar body como ArrayBuffer (base64 para WebSocket)
+      let requestBody: string | undefined;
+      if (req.body) {
+        if (Buffer.isBuffer(req.body)) {
+          // Si ya es un Buffer, convertir a base64
+          requestBody = req.body.toString('base64');
+        } else if (typeof req.body === 'string') {
+          // Si es string, convertir a base64
+          requestBody = Buffer.from(req.body).toString('base64');
+        } else {
+          // Si es objeto JSON, convertir a string y luego a base64
+          requestBody = Buffer.from(JSON.stringify(req.body)).toString('base64');
+        }
+      }
+
       // Enviar request al cliente WebSocket correspondiente
       const response = await this.proxyService.proxyRequest(targetIp, {
         method: req.method as any,
         path: pathAfterIp,
         headers: req.headers as any,
-        body: req.body ? JSON.stringify(req.body) : undefined,
+        body: requestBody,
         query: req.query as any,
       });
 
@@ -58,12 +73,22 @@ export class ProxyController {
 
       // Enviar body
       if (response.body) {
-        // Si el body está en base64, decodificarlo
-        if (this.isBase64(response.body)) {
-          const buffer = Buffer.from(response.body, 'base64');
-          res.send(buffer);
-        } else {
+        // El body ahora es un ArrayBuffer (Buffer en Node.js)
+        if (Buffer.isBuffer(response.body)) {
+          // Si ya es un Buffer, enviarlo directamente
           res.send(response.body);
+        } else if (typeof response.body === 'string') {
+          // Si es string, verificar si es base64
+          if (this.isBase64(response.body)) {
+            const buffer = Buffer.from(response.body, 'base64');
+            res.send(buffer);
+          } else {
+            res.send(response.body);
+          }
+        } else {
+          // Para otros tipos (ArrayBuffer, etc.), convertirlo a Buffer
+          const buffer = Buffer.from(response.body);
+          res.send(buffer);
         }
       } else {
         res.end();
