@@ -88,6 +88,37 @@ npm run start:prod
 1. **API NestJS**: Abrir http://localhost:3000/api
 2. **Frontend Vue.js**: Abrir http://localhost:5173
 3. **Estado del Sistema**: Verificar en http://localhost:5173 que muestre "API conectada correctamente"
+4. **WebSocket**: Verificar que el servidor muestre "WebSocket disponible en ws://localhost:3000"
+
+## Configuración del Proxy WebSocket
+
+### Para usar el sistema de proxy:
+
+1. **Conectar Cliente WebSocket**:
+   - Un cliente WebSocket debe conectarse al servidor
+   - El cliente debe servir contenido local
+   - Se registrará automáticamente por su IP
+
+2. **Acceder al Contenido**:
+   - Usar URLs como `http://localhost:3000/{ip}/ruta`
+   - Donde `{ip}` es la IP del cliente WebSocket
+   - Ejemplo: `http://localhost:3000/127.0.0.1/index.html`
+
+3. **Verificar Conexiones**:
+   - Usar `http://localhost:3000/api/stats` para ver clientes conectados
+   - Usar `http://localhost:3000/{ip}` para verificar conexión específica
+
+### Ejemplo de Uso:
+```bash
+# Verificar estado del sistema
+curl http://localhost:3000/api/health
+
+# Ver clientes conectados
+curl http://localhost:3000/api/stats
+
+# Acceder a contenido (reemplazar IP con la real)
+curl http://localhost:3000/127.0.0.1/index.html
+```
 
 ## Solución de Problemas Comunes
 

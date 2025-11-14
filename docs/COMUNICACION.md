@@ -1,127 +1,129 @@
 # Diagrama de Comunicación - CloserClick
 
-## Flujo de Comunicación del Sistema
+## Flujo de Comunicación del Proxy WebSocket
 
 ```mermaid
 sequenceDiagram
-    participant U as Usuario
-    participant LB as Load Balancer/Proxy
+    participant HTTP as Cliente HTTP
     participant API as API NestJS
-    participant WS as WebSocket Server
-    participant PM as Máquina Privada
-    participant PWA as Aplicación PWA
+    participant WS as WebSocket Gateway
+    participant CM as Connection Manager
+    participant WSC as Cliente WebSocket
+    participant FS as Sistema de Archivos
 
-    Note over U, PWA: Solicitud IP/DNS
-    U->>LB: GET closer.click/ip<br/>o closer.click/dns
-    LB->>API: Proxea solicitud
+    Note over HTTP, FS: Conexión WebSocket
+    WSC->>WS: Conecta al WebSocket
+    WS->>CM: Registra cliente (IP: 192.168.1.100)
+    CM->>WS: Confirmación de registro
     
-    Note over API, PM: Resolución y Conexión
-    API->>WS: Verifica conexión WebSocket
-    WS->>PM: Establece conexión segura
+    Note over HTTP, FS: Solicitud HTTP
+    HTTP->>API: GET /192.168.1.100/index.html
+    API->>CM: Busca cliente con IP 192.168.1.100
+    CM->>API: Cliente encontrado
     
-    Note over PM, PWA: Obtención de Contenido
-    PM->>PWA: Solicita contenido basado en URL
-    PWA->>PM: Retorna HTML/Contenido
+    Note over API, WSC: Envío via WebSocket
+    API->>WS: Envía request via WebSocket
+    WS->>WSC: Mensaje tipo "request"
     
-    Note over PM, U: Retorno al Usuario
-    PM->>WS: Envía contenido HTML
-    WS->>API: Retorna datos
-    API->>LB: Respuesta con contenido
-    LB->>U: HTML renderizado al usuario
+    Note over WSC, FS: Procesamiento local
+    WSC->>FS: Lee archivo index.html
+    FS->>WSC: Retorna contenido
+    
+    Note over WSC, HTTP: Respuesta via WebSocket
+    WSC->>WS: Mensaje tipo "response"
+    WS->>API: Retorna respuesta
+    API->>HTTP: Envía contenido HTML
 ```
 
 ## Arquitectura de Comunicación
 
 ```mermaid
 flowchart TD
-    A[Usuario] --> B[closer.click/ip<br/>closer.click/dns]
-    B --> C[API NestJS<br/>closer.click:3000]
+    A[Cliente HTTP] --> B[API NestJS<br/>localhost:3000]
+    B --> C{¿Cliente WebSocket<br/>conectado?}
+    C -->|Sí| D[WebSocket Gateway]
+    C -->|No| E[Error 503]
     
-    C --> D{¿Conexión WebSocket?}
-    D -->|Sí| E[WebSocket Server]
-    D -->|No| F[Respuesta Directa]
+    D --> F[Connection Manager]
+    F --> G[Cliente WebSocket<br/>IP específica]
+    G --> H[Sistema de Archivos<br/>Máquina Local]
     
-    E --> G[Máquina Privada<br/>Detrás de Firewall]
-    G --> H[Aplicación PWA]
-    H --> I[Genera Contenido HTML]
-    
-    I --> G
-    G --> E
-    E --> C
-    C --> B
+    H --> G
+    G --> D
+    D --> B
     B --> A
     
-    F --> A
+    E --> A
     
-    subgraph "Entorno Público"
+    subgraph "Servidor Público"
         B
-        C
-        E
+        D
+        F
     end
     
-    subgraph "Entorno Privado"
+    subgraph "Máquina Cliente"
         G
         H
-        I
     end
 ```
 
 ## Componentes del Sistema
 
-### 1. **Frontend Público**
-- **Dominio**: `closer.click`
-- **Endpoints**:
-  - `/ip` - Resolución de direcciones IP
-  - `/dns` - Consultas de DNS
-- **Función**: Proxy inicial y enrutamiento
-
-### 2. **API NestJS**
+### 1. **API NestJS**
 - **Puerto**: 3000
 - **Responsabilidades**:
-  - Procesar solicitudes HTTP
-  - Gestionar conexiones WebSocket
-  - Coordinar comunicación con máquina privada
-  - Retornar contenido HTML al usuario
+  - Procesar solicitudes HTTP en `/{ip}/*`
+  - Gestionar conexiones WebSocket via Socket.IO
+  - Coordinar comunicación con clientes WebSocket
+  - Retornar contenido al cliente HTTP
 
-### 3. **Servidor WebSocket**
-- **Función**: Conexión persistente con máquina privada
-- **Protocolo**: WebSocket seguro
-- **Autenticación**: Tokens/credenciales específicas
+### 2. **WebSocket Gateway**
+- **Función**: Manejar conexiones WebSocket persistentes
+- **Protocolo**: Socket.IO sobre WebSocket
+- **Autenticación**: Basada en IP del cliente
+- **Registro**: Connection Manager por IP
 
-### 4. **Máquina Privada**
-- **Ubicación**: Detrás de firewall corporativo
-- **Acceso**: Solo mediante WebSocket autorizado
-- **Función**: Host de la aplicación PWA
+### 3. **Connection Manager**
+- **Función**: Gestionar registro de clientes conectados
+- **Mapeo**: IP → Socket ID
+- **Timeout**: 30 segundos para requests
+- **Estadísticas**: Monitoreo de conexiones activas
 
-### 5. **Aplicación PWA**
-- **Tipo**: Progressive Web App
-- **Responsabilidad**: Generar contenido HTML dinámico
-- **Comunicación**: Via WebSocket con API pública
+### 4. **Proxy Controller**
+- **Endpoints**: `/{ip}/*` para cualquier método HTTP
+- **Función**: Extraer IP y ruta, enrutar a cliente WebSocket
+- **Codificación**: Base64 para contenido binario
+
+### 5. **Cliente WebSocket**
+- **Ubicación**: Cualquier máquina con acceso a contenido
+- **Función**: Servir contenido local via WebSocket
+- **Protocolo**: Mensajes tipo "request" y "response"
 
 ## Flujo Detallado
 
-### Fase 1: Solicitud del Usuario
-1. Usuario accede a `closer.click/ip` o `closer.click/dns`
-2. Load balancer/proxy recibe la solicitud
-3. Request es enrutado al API NestJS
+### Fase 1: Conexión WebSocket
+1. Cliente WebSocket se conecta al servidor en `ws://localhost:3000`
+2. WebSocket Gateway registra la conexión con su IP
+3. Connection Manager almacena el mapeo IP → Socket ID
+4. Se crea endpoint HTTP específico para esa IP
 
-### Fase 2: Procesamiento del API
-1. API valida la solicitud
-2. Verifica si existe conexión WebSocket activa
-3. Si hay conexión, procede con la solicitud
-4. Si no hay conexión, retorna error o intenta establecerla
+### Fase 2: Solicitud HTTP
+1. Cliente HTTP accede a `http://localhost:3000/{ip}/ruta`
+2. ProxyController extrae la IP y ruta del request
+3. Busca en Connection Manager si hay cliente con esa IP
+4. Si no existe, retorna error 503
 
-### Fase 3: Comunicación con Máquina Privada
-1. WebSocket Server envía solicitud a máquina privada
-2. Máquina privada ejecuta la aplicación PWA
-3. PWA genera contenido basado en la URL solicitada
-4. Contenido HTML es retornado a través del WebSocket
+### Fase 3: Comunicación WebSocket
+1. ProxyService envía request via WebSocket al cliente
+2. Mensaje tipo "request" con método, ruta, headers y body
+3. Cliente WebSocket procesa el request localmente
+4. Lee archivo del sistema de archivos local
 
-### Fase 4: Respuesta al Usuario
-1. API recibe el contenido HTML
-2. Formatea la respuesta HTTP
-3. Retorna el HTML al usuario final
-4. Usuario ve el contenido renderizado
+### Fase 4: Respuesta HTTP
+1. Cliente WebSocket envía respuesta tipo "response"
+2. Connection Manager correlaciona request/response
+3. ProxyController decodifica contenido (base64 si es binario)
+4. Retorna respuesta HTTP al cliente original
 
 ## Consideraciones de Seguridad
 
@@ -134,15 +136,16 @@ flowchart TD
 
 | Componente | URL/Puerto | Propósito |
 |------------|------------|-----------|
-| Frontend Público | `closer.click` | Punto de entrada |
-| API NestJS | `closer.click:3000` | Procesamiento backend |
-| WebSocket | `wss://closer.click/ws` | Comunicación privada |
-| Máquina Privada | Interno | Host PWA |
-| PWA | Interno | Generación contenido |
+| API NestJS | `localhost:3000` | Servidor principal |
+| WebSocket | `ws://localhost:3000` | Comunicación WebSocket |
+| Proxy HTTP | `/{ip}/*` | Proxy de contenido |
+| API Health | `/api/health` | Estado del sistema |
+| API Stats | `/api/stats` | Estadísticas |
 
 ## Dependencias y Requisitos
 
-- **Conexión WebSocket**: Requerida para acceso a máquina privada
-- **Autenticación**: Credenciales para conexión segura
-- **Firewall**: Configuración para permitir WebSocket específico
-- **PWA**: Aplicación funcionando en máquina privada
+- **Conexión WebSocket**: Requerida para proxy de contenido
+- **Cliente WebSocket**: Aplicación que sirve contenido local
+- **Timeout**: 30 segundos máximo por request
+- **Base64**: Codificación para contenido binario
+- **CORS**: Configurado para desarrollo (`origin: '*'`)

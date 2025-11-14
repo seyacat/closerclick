@@ -1,81 +1,103 @@
 # Arquitectura del Sistema CloserClick
 
-## Diagrama de Flujo de la Arquitectura
+## Diagrama de Flujo del Proxy WebSocket
 
 ```mermaid
 flowchart TD
-    A[Usuario] --> B[Frontend Vue.js]
-    B --> C[API NestJS]
-    C --> D[Base de Datos]
-    C --> E[Archivos Estáticos]
+    A[Cliente HTTP] --> B[API NestJS<br/>localhost:3000]
+    B --> C{¿Cliente WebSocket<br/>conectado?}
+    C -->|Sí| D[WebSocket Gateway]
+    C -->|No| E[Error 503]
     
-    subgraph Frontend
-        B --> F[Vite Dev Server<br/>localhost:5173]
-        F --> G[Componentes Vue]
-        G --> H[Llamadas HTTP]
+    D --> F[Connection Manager]
+    F --> G[Cliente WebSocket<br/>IP específica]
+    G --> H[Contenido Local<br/>Máquina Privada]
+    
+    H --> G
+    G --> D
+    D --> B
+    B --> A
+    
+    E --> A
+    
+    subgraph "Entorno Público"
+        B
+        D
+        F
     end
     
-    subgraph Backend
-        C --> I[NestJS Server<br/>localhost:3000]
-        I --> J[Controladores]
-        J --> K[Servicios]
-        K --> L[Middleware]
+    subgraph "Entorno Privado"
+        G
+        H
     end
-    
-    subgraph Recursos
-        E --> M[Carpeta Public<br/>/src/public]
-        D --> N[Base de Datos<br/>PostgreSQL/MongoDB]
-    end
-    
-    H --> J
-    L --> N
-    I --> M
 ```
 
 ## Estructura del Proyecto
 
 ```
 closerclick/
-├── api/                    # Backend NestJS
+├── api/                    # Backend NestJS con WebSocket
 │   ├── src/
-│   │   ├── public/         # Archivos estáticos
+│   │   ├── proxy/          # Sistema de proxy
+│   │   │   ├── proxy.controller.ts    # Controlador de proxy
+│   │   │   ├── proxy.service.ts       # Servicio de proxy
+│   │   │   ├── connection-manager.service.ts # Gestor de conexiones
+│   │   │   └── stats.controller.ts    # Estadísticas
+│   │   ├── websocket/      # Gateway WebSocket
+│   │   │   ├── websocket.gateway.ts   # Gateway principal
+│   │   │   └── connection-manager.service.ts
+│   │   ├── types/          # Tipos TypeScript
+│   │   │   └── websocket.types.ts
 │   │   ├── main.ts         # Configuración del servidor
 │   │   ├── app.controller.ts
 │   │   ├── app.service.ts
 │   │   └── app.module.ts
 │   └── package.json
-├── frontend/               # Frontend Vue.js
+├── frontend/               # Frontend Vue.js para monitoreo
 │   ├── src/
 │   │   ├── App.vue         # Componente principal
 │   │   ├── main.ts         # Punto de entrada
 │   │   └── components/
 │   └── package.json
-└── package.json            # Scripts globales
+├── docs/                   # Documentación
+└── sample/                 # Ejemplos y clientes de prueba
 ```
 
-## Flujo de Datos
+## Flujo de Datos del Proxy
 
-1. **Frontend (Vue.js + TypeScript)**
-   - Usuario interactúa con la aplicación
-   - Componentes Vue realizan llamadas HTTP a la API
-   - Manejo de estado y actualización de la UI
+1. **Cliente WebSocket se conecta**
+   - Cliente se conecta al WebSocket Gateway
+   - Se registra su IP en el ConnectionManager
+   - Se crea un endpoint específico para esa IP
 
-2. **Backend (NestJS)**
-   - Recibe requests HTTP en `/api/*`
-   - Controladores procesan las rutas
-   - Servicios implementan la lógica de negocio
-   - Middleware para validación y autenticación
+2. **Cliente HTTP hace request**
+   - Request a `/{ip}/*` donde `{ip}` es la IP del cliente WebSocket
+   - ProxyController extrae la IP y ruta
+   - Busca cliente WebSocket correspondiente
 
-3. **Recursos Estáticos**
-   - Archivos servidos desde `/src/public`
-   - Accesibles en `/public/*`
-   - Configurados en `main.ts`
+3. **Comunicación WebSocket**
+   - Request se envía al cliente WebSocket via Socket.IO
+   - Cliente WebSocket procesa el request localmente
+   - Retorna respuesta via WebSocket
+
+4. **Respuesta al Cliente HTTP**
+   - API recibe respuesta del WebSocket
+   - Decodifica contenido (base64 si es binario)
+   - Retorna respuesta HTTP al cliente original
 
 ## Endpoints de la API
 
+### API Principal
 - `GET /api` - Mensaje de bienvenida
 - `GET /api/health` - Estado del sistema
-- `GET /public/*` - Archivos estáticos
+- `GET /api/stats` - Estadísticas de conexiones WebSocket
+
+### Sistema de Proxy
+- `GET/POST/PUT/DELETE /{ip}/*` - Proxy de contenido para IP específica
+- `GET /{ip}` - Verificar conexión de cliente WebSocket
+
+### Debug
+- `GET /api/debug/myip` - Obtener IP del cliente
 
 ## Configuración de Puertos
 
@@ -97,7 +119,8 @@ npm run build:frontend # Compila frontend
 
 ## Tecnologías Utilizadas
 
-- **Backend**: NestJS, TypeScript, Express
+- **Backend**: NestJS, TypeScript, Express, Socket.IO
 - **Frontend**: Vue 3, TypeScript, Vite
-- **Servidor de Archivos**: Express Static
+- **WebSocket**: Socket.IO para comunicación bidireccional
+- **Proxy**: Sistema de proxy basado en IP
 - **Gestión de Paquetes**: npm

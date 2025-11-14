@@ -7,6 +7,16 @@
 ```
 api/
 ├── src/
+│   ├── proxy/               # Sistema de proxy WebSocket
+│   │   ├── proxy.controller.ts    # Controlador de proxy
+│   │   ├── proxy.service.ts       # Servicio de proxy
+│   │   ├── connection-manager.service.ts # Gestor de conexiones
+│   │   └── stats.controller.ts    # Estadísticas
+│   ├── websocket/           # Gateway WebSocket
+│   │   ├── websocket.gateway.ts   # Gateway principal
+│   │   └── connection-manager.service.ts
+│   ├── types/               # Tipos TypeScript
+│   │   └── websocket.types.ts
 │   ├── main.ts              # Configuración del servidor
 │   ├── app.module.ts        # Módulo principal
 │   ├── app.controller.ts    # Controlador principal
@@ -147,9 +157,71 @@ cd ../api && npx eslint .
 - Documentación clara
 - Tests automatizados
 
+## Sistema de Proxy WebSocket
+
+### Arquitectura del Proxy
+
+El sistema implementa un proxy que permite acceder a contenido de máquinas privadas mediante WebSocket:
+
+1. **WebSocket Gateway**: Maneja conexiones persistentes
+2. **Connection Manager**: Registra clientes por IP
+3. **Proxy Controller**: Enruta requests HTTP a clientes WebSocket
+4. **Proxy Service**: Lógica de negocio para el proxy
+
+### Protocolo de Comunicación
+
+#### Mensaje de Request (API → Cliente)
+```json
+{
+  "type": "request",
+  "payload": {
+    "id": "uuid-v4",
+    "method": "GET",
+    "path": "/index.html",
+    "headers": {
+      "user-agent": "...",
+      "accept": "..."
+    },
+    "query": {},
+    "body": null
+  }
+}
+```
+
+#### Mensaje de Response (Cliente → API)
+```json
+{
+  "type": "response",
+  "payload": {
+    "id": "uuid-v4",
+    "statusCode": 200,
+    "statusMessage": "OK",
+    "headers": {
+      "content-type": "text/html",
+      "content-length": "1234"
+    },
+    "body": "base64-encoded-content"
+  }
+}
+```
+
+### Desarrollo del Proxy
+
+Para trabajar con el sistema de proxy:
+
+1. **Conexiones WebSocket**: Usar `WebSocketGatewayHandler`
+2. **Gestión de Clientes**: Usar `ConnectionManagerService`
+3. **Proxy HTTP**: Usar `ProxyController` y `ProxyService`
+4. **Estadísticas**: Usar `StatsController`
+
+### Testing del Proxy
+
+Ver [Guía de Pruebas del Proxy](./TESTING_PROXY.md) para instrucciones detalladas.
+
 ## Recursos Adicionales
 
 - [Documentación de NestJS](https://docs.nestjs.com)
 - [Documentación de Vue.js](https://vuejs.org/guide)
 - [Guía de TypeScript](https://www.typescriptlang.org/docs)
 - [ESLint Configuration](https://eslint.org/docs/user-guide/configuring)
+- [Socket.IO Documentation](https://socket.io/docs/v4/)
