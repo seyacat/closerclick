@@ -64,12 +64,29 @@ jobs:
           echo "Actualizando código desde Git..."
           git pull origin main
 
+          # Instalar dependencias
+          echo "Instalando dependencias raíz..."
+          npm install
+
+          echo "Instalando dependencias API..."
+          cd api && npm install && cd ..
+
+          echo "Instalando dependencias frontend..."
+          cd frontend && npm install && cd ..
+
           # Compilar proyectos
           echo "Compilando frontend..."
           cd frontend && npm run build && cd ..
 
           echo "Compilando API..."
           cd api && npm run build && cd ..
+
+          # Verificar que la compilación fue exitosa
+          echo "Verificando compilación del API..."
+          if [ ! -f "api/dist/main.js" ]; then
+            echo "ERROR: No se encontró api/dist/main.js - La compilación falló"
+            exit 1
+          fi
 
           # Iniciar API en screen
           echo "Iniciando API en sesión screen..."
