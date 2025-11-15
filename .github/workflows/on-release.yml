@@ -36,6 +36,9 @@ jobs:
 
           echo "Iniciando deploy de CloserClick en VPS..."
 
+          # Cargar profile para tener acceso a npm
+          source ~/.bashrc || source ~/.profile || source ~/.bash_profile
+
           # Configurar SSH para clonar repositorio
           mkdir -p ~/.ssh
           echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
@@ -91,7 +94,7 @@ jobs:
           # Iniciar API en screen
           echo "Iniciando API en sesión screen..."
           screen -dmS "$foldername" bash
-          screen -S "$foldername" -X stuff "cd ${{ secrets.VPS_PATH }} && cd api && npm run start:prod \n"
+          screen -S "$foldername" -X stuff "source ~/.bashrc || source ~/.profile || source ~/.bash_profile; cd ${{ secrets.VPS_PATH }} && cd api && npm run start:prod \n"
 
           # Mostrar sesiones activas
           echo "Sesiones screen activas:"
