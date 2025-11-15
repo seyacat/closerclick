@@ -38,6 +38,12 @@ jobs:
 
           echo "Iniciando deploy de CloserClick en VPS..."
 
+          # Clonar repositorio si no existe
+          if [ ! -d "${{ secrets.VPS_PATH }}" ]; then
+            echo "Clonando repositorio en: ${{ secrets.VPS_PATH }}"
+            git clone https://github.com/${{ github.repository }}.git "${{ secrets.VPS_PATH }}"
+          fi
+
           # Navegar al directorio del proyecto
           cd ${{ secrets.VPS_PATH }}
 
