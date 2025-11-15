@@ -95,8 +95,7 @@ jobs:
 
           # Iniciar API en screen
           echo "Iniciando API en sesión screen..."
-          screen -dmS "$foldername" bash
-          screen -S "$foldername" -X stuff "export NVM_DIR=\\\"\\$HOME/.nvm\\\"; [ -s \\\"\\$NVM_DIR/nvm.sh\\\" ] && \\\\. \\\"\\$NVM_DIR/nvm.sh\\\"; cd ${{ secrets.VPS_PATH }} && cd api && npm run start:prod \n"
+          screen -dmS "$foldername" bash -c "cd ${{ secrets.VPS_PATH }}/api && npm run start:prod"
 
           # Mostrar sesiones activas
           echo "Sesiones screen activas:"
