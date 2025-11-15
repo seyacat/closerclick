@@ -1,50 +1,82 @@
-name: Run script on release
+name: Deploy to VPS on release
 
 on:
   release:
     types: [published]
 
 jobs:
-  run-script:
+  deploy:
     runs-on: ubuntu-latest
-
+    environment: PRODUCTION
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-          cache: 'npm'
-
-      - name: Instalar screen
-        run: sudo apt-get update && sudo apt-get install -y screen
-
-      - name: Instalar dependencias raíz
-        run: npm install
-
-      - name: Instalar dependencias API
-        run: cd api && npm install
-
-      - name: Instalar dependencias frontend
-        run: cd frontend && npm install
-
-      - name: Compilar frontend
-        run: cd frontend && npm run build
-
-      - name: Compilar API
-        run: cd api && npm run build
-
-      - name: Iniciar API en screen
+      - name: Setup SSH
         run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          set -e
+
+          echo "=== INFORMACIÓN DEL AMBIENTE ==="
+          echo "Hostname: $(hostname)"
+          echo "Sistema operativo: $(uname -a)"
+          echo "Directorio actual: $(pwd)"
+          echo "Usuario: $(whoami)"
+          echo "Node.js version: $(node --version)"
+          echo "npm version: $(npm --version)"
+          echo "Git version: $(git --version)"
+          echo "================================"
+
+          echo "Iniciando deploy de CloserClick en VPS..."
+
+          # Navegar al directorio del proyecto
+          cd ${{ secrets.VPS_PATH }}
+
+          # Obtener el nombre de la carpeta para la sesión screen
           foldername=$(basename "$(pwd)")
-          for session in $(screen -ls | grep -o "[0-9]*\.$foldername"); do screen -S "${session}" -X quit; done
+
+          # Detener sesiones screen existentes
+          echo "Deteniendo sesiones screen existentes..."
+          for session in $(screen -ls | grep -o "[0-9]*\.$foldername"); do
+              screen -S "${session}" -X quit
+          done
+
+          # Actualizar código desde Git
+          echo "Actualizando código desde Git..."
+          git pull origin main
+
+          # Instalar dependencias
+          echo "Instalando dependencias raíz..."
+          npm install
+
+          echo "Instalando dependencias API..."
+          cd api && npm install && cd ..
+
+          echo "Instalando dependencias frontend..."
+          cd frontend && npm install && cd ..
+
+          # Compilar proyectos
+          echo "Compilando frontend..."
+          cd frontend && npm run build && cd ..
+
+          echo "Compilando API..."
+          cd api && npm run build && cd ..
+
+          # Iniciar API en screen
+          echo "Iniciando API en sesión screen..."
           screen -dmS "$foldername" bash
           screen -S "$foldername" -X stuff "cd api && npm run start:prod \n"
+
+          # Mostrar sesiones activas
+          echo "Sesiones screen activas:"
           screen -ls
-        
-      - name: Verificar que API está corriendo
-        run: |
-          sleep 10
-          curl -f http://localhost:3000 || echo "API no responde"
+
+          echo "Deploy completado exitosamente!"
+          EOF
