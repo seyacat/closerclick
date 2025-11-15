@@ -30,6 +30,16 @@ export class ProxyController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
+    // Excluir rutas especiales del manejo del proxy
+    const excludedRoutes = ['public', '.well-known', 'assets', 'vite.svg'];
+    if (excludedRoutes.includes(targetIp)) {
+      // Dejar que otros middlewares manejen estas rutas
+      // En lugar de 404, dejamos que Express sirva el archivo estático
+      // Si llegamos aquí, significa que el archivo no existe en la carpeta pública
+      res.status(404).send('Archivo estático no encontrado');
+      return;
+    }
+
     // Extraer la ruta después de /:ip/
     const fullPath = req.path;
     const pathAfterIp = fullPath.substring(fullPath.indexOf(targetIp) + targetIp.length) || '/';
@@ -135,6 +145,16 @@ export class ProxyController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
+    // Excluir rutas especiales del manejo del proxy
+    const excludedRoutes = ['public', '.well-known', 'assets', 'vite.svg'];
+    if (excludedRoutes.includes(targetIp)) {
+      // Dejar que otros middlewares manejen estas rutas
+      // En lugar de 404, dejamos que Express sirva el archivo estático
+      // Si llegamos aquí, significa que el archivo no existe en la carpeta pública
+      res.status(404).send('Archivo estático no encontrado');
+      return;
+    }
+
     // Si es un request GET a la raíz sin trailing slash, redirigir a con trailing slash
     // para que los recursos relativos se resuelvan correctamente
     if (req.method === 'GET' && req.path === `/${targetIp}`) {

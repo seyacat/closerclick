@@ -3,20 +3,42 @@ import { AppModule } from './app.module';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { Logger } from '@nestjs/common';
+import { existsSync, readdirSync } from 'fs';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
+  logger.log('=== INICIANDO SERVIDOR CON CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS ===');
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  // Configurar carpeta pública ANTES de inicializar la aplicación
+  const publicPath = join(__dirname, 'public');
+  const absolutePublicPath = join(process.cwd(), 'src', 'public');
+  logger.log(`Configurando archivos estáticos desde: ${publicPath}`);
+  logger.log(`Ruta absoluta esperada: ${absolutePublicPath}`);
+  logger.log(`Directorio de trabajo actual: ${process.cwd()}`);
+  logger.log(`__dirname: ${__dirname}`);
+  
+  // Verificar si existe el directorio público
+  if (existsSync(absolutePublicPath)) {
+    logger.log(`Directorio público encontrado: ${absolutePublicPath}`);
+    const files = readdirSync(absolutePublicPath);
+    logger.log(`Archivos en directorio público: ${files.join(', ')}`);
+  } else {
+    logger.error(`Directorio público NO encontrado: ${absolutePublicPath}`);
+  }
+  
+  // Usar ambas rutas para desarrollo y producción
+  app.useStaticAssets(publicPath, {
+    prefix: '/public/',
+  });
+  app.useStaticAssets(absolutePublicPath, {
+    prefix: '/public/',
+  });
 
   // Habilitar CORS
   app.enableCors({
     origin: '*', // En producción, configurar orígenes específicos
     credentials: true,
-  });
-
-  // Configurar carpeta pública
-  app.useStaticAssets(join(__dirname, 'public'), {
-    prefix: '/public/',
   });
 
   // Configurar para obtener IP real del cliente
@@ -27,5 +49,6 @@ async function bootstrap() {
 
   logger.log(`Aplicación escuchando en puerto ${port}`);
   logger.log(`WebSocket disponible en ws://localhost:${port}`);
+  logger.log(`Archivos estáticos disponibles en http://localhost:${port}/public/`);
 }
 void bootstrap();
