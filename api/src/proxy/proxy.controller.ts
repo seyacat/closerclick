@@ -34,7 +34,9 @@ export class ProxyController {
     const fullPath = req.path;
     const pathAfterIp = fullPath.substring(fullPath.indexOf(targetIp) + targetIp.length) || '/';
 
-    this.logger.log(`Request para IP ${targetIp}: ${req.method} ${pathAfterIp}`);
+    this.logger.log(
+      `Request para IP ${targetIp}: ${req.method} ${pathAfterIp}`,
+    );
 
     try {
       // Preparar body como ArrayBuffer (base64 para WebSocket)
@@ -48,7 +50,9 @@ export class ProxyController {
           requestBody = Buffer.from(req.body).toString('base64');
         } else {
           // Si es objeto JSON, convertir a string y luego a base64
-          requestBody = Buffer.from(JSON.stringify(req.body)).toString('base64');
+          requestBody = Buffer.from(JSON.stringify(req.body)).toString(
+            'base64',
+          );
         }
       }
 
@@ -94,7 +98,9 @@ export class ProxyController {
         res.end();
       }
 
-      this.logger.log(`Respuesta enviada: ${response.statusCode} para ${pathAfterIp}`);
+      this.logger.log(
+        `Respuesta enviada: ${response.statusCode} para ${pathAfterIp}`,
+      );
     } catch (error) {
       this.logger.error(`Error al procesar request: ${error.message}`);
 
@@ -129,7 +135,14 @@ export class ProxyController {
     @Req() req: Request,
     @Res() res: Response,
   ): Promise<void> {
-    // Para requests a la raíz de la IP, servir contenido por defecto
+    // Si es un request GET a la raíz sin trailing slash, redirigir a con trailing slash
+    // para que los recursos relativos se resuelvan correctamente
+    if (req.method === 'GET' && req.path === `/${targetIp}`) {
+      res.redirect(301, `/${targetIp}/`);
+      return;
+    }
+
+    // Para otros métodos o requests específicos, procesar normalmente
     await this.handleIpProxy(targetIp, req, res);
   }
 
