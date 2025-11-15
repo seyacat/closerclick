@@ -6,7 +6,7 @@ const healthData = ref<{ status: string; timestamp: string } | null>(null)
 
 const checkApiHealth = async () => {
   try {
-    const response = await fetch('http://localhost:3000/api/health')
+    const response = await fetch('/api/health')
     if (response.ok) {
       const data = await response.json()
       healthData.value = data
