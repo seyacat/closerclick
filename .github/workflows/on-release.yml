@@ -65,7 +65,16 @@ jobs:
               screen -S "${session}" -X quit
           done
 
-          # Actualizar código desde Git
+          # Verificar estado y limpiar todos los archivos modificados
+          echo "Verificando estado de Git..."
+          git status
+          
+          echo "Limpiando todos los archivos modificados..."
+          git checkout -- . 2>/dev/null || true
+          
+          echo "Limpiando archivos no rastreados (excepto .env)..."
+          git clean -fd --exclude=.env --exclude=*.env* 2>/dev/null || true
+          
           echo "Actualizando código desde Git..."
           git pull origin main
 
