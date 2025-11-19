@@ -1,0 +1,90 @@
+name: Deploy to Develop
+
+on:
+  push:
+    branches: [ '**' ]
+
+jobs:
+  deploy:
+    if: contains(github.event.head_commit.message, 'DEPLOY')
+    runs-on: ubuntu-latest
+    environment: DEVELOP
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.VPS_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to VPS
+        run: |
+          ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} << 'EOF'
+          set -e
+
+          echo "=== INFORMACIÓN DEL AMBIENTE DEVELOP ==="
+          echo "Hostname: $(hostname)"
+          echo "Sistema operativo: $(uname -a)"
+          echo "Directorio actual: $(pwd)"
+          echo "Usuario: $(whoami)"
+          echo "Node.js version: $(node --version)"
+          echo "npm version: $(npm --version)"
+          echo "Git version: $(git --version)"
+          echo "================================"
+
+          echo "Iniciando deploy de CloserClick en ambiente DEVELOP..."
+
+          # Navegar al directorio del proyecto develop
+          cd ${{ secrets.VPS_PATH_DEVELOP }}
+
+          # Obtener el nombre de la carpeta para la sesión screen
+          foldername=$(basename "$(pwd)")
+
+          # Detener sesiones screen existentes
+          echo "Deteniendo sesiones screen existentes..."
+          for session in $(screen -ls | grep -o "[0-9]*\.$foldername"); do
+              screen -S "${session}" -X quit
+          done
+
+          # Limpiar cambios locales y cambiar a rama develop
+          echo "Limpiando cambios locales..."
+          git reset --hard HEAD
+          git clean -fd
+
+          echo "Cambiando a rama develop..."
+          git checkout develop
+
+          echo "Actualizando código desde Git..."
+          git pull origin develop
+
+          # Instalar dependencias
+          echo "Instalando dependencias raíz..."
+          npm install
+
+          echo "Instalando dependencias API..."
+          cd api && npm install && cd ..
+
+          echo "Instalando dependencias frontend..."
+          cd frontend && npm install && cd ..
+
+          # Compilar proyectos
+          echo "Compilando frontend..."
+          cd frontend && npm run build && cd ..
+
+          echo "Compilando API..."
+          cd api && npm run build && cd ..
+
+          # Iniciar API en screen
+          echo "Iniciando API en sesión screen..."
+          screen -dmS "$foldername" bash
+          screen -S "$foldername" -X stuff "cd api && npm run start:prod \n"
+
+          # Mostrar sesiones activas
+          echo "Sesiones screen activas:"
+          screen -ls
+
+          echo "Deploy en ambiente DEVELOP completado exitosamente!"
+          EOF
