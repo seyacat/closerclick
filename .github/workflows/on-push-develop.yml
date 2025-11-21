@@ -38,7 +38,7 @@ jobs:
           echo "Iniciando deploy de CloserClick en ambiente DEVELOP..."
 
           # Navegar al directorio del proyecto develop
-          cd ${{ secrets.VPS_PATH_DEVELOP }}
+          cd ${{ secrets.VPS_PATH }}
 
           # Obtener el nombre de la carpeta para la sesión screen
           foldername=$(basename "$(pwd)")
