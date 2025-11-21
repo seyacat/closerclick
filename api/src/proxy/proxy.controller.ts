@@ -10,10 +10,12 @@ import {
 } from '@nestjs/common';
 import type { Request, Response } from 'express';
 import { ProxyService } from './proxy.service';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 
 /**
  * Controlador para manejar requests de proxy
  */
+@ApiTags('proxy')
 @Controller()
 export class ProxyController {
   private readonly logger = new Logger(ProxyController.name);
@@ -24,6 +26,13 @@ export class ProxyController {
    * Maneja todos los requests a /:ip/*
    * Donde :ip es la IP del cliente WebSocket al que queremos acceder
    */
+  @ApiOperation({ summary: 'Proxy para rutas específicas de un cliente WebSocket' })
+  @ApiParam({ name: 'ip', description: 'IP del cliente WebSocket', example: '192.168.1.100' })
+  @ApiResponse({ status: 200, description: 'Respuesta del cliente WebSocket' })
+  @ApiResponse({ status: 404, description: 'Archivo estático no encontrado' })
+  @ApiResponse({ status: 503, description: 'No hay cliente conectado con la IP especificada' })
+  @ApiResponse({ status: 504, description: 'Timeout esperando respuesta del cliente' })
+  @ApiResponse({ status: 500, description: 'Error interno del servidor' })
   @All(':ip/*')
   async handleIpProxy(
     @Param('ip') targetIp: string,
@@ -139,6 +148,12 @@ export class ProxyController {
    * Endpoint para verificar el estado de conexión de una IP específica
    * y servir contenido si se solicita la raíz
    */
+  @ApiOperation({ summary: 'Proxy para la raíz de un cliente WebSocket' })
+  @ApiParam({ name: 'ip', description: 'IP del cliente WebSocket', example: '192.168.1.100' })
+  @ApiResponse({ status: 200, description: 'Respuesta del cliente WebSocket' })
+  @ApiResponse({ status: 301, description: 'Redirección a ruta con trailing slash' })
+  @ApiResponse({ status: 404, description: 'Archivo estático no encontrado' })
+  @ApiResponse({ status: 503, description: 'No hay cliente conectado con la IP especificada' })
   @All(':ip')
   async handleIpRoot(
     @Param('ip') targetIp: string,
