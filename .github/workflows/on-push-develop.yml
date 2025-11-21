@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy:
-    if: contains(toUpper(github.event.head_commit.message), 'DEPLOY')
+    if: contains(github.event.head_commit.message, 'DEPLOY') || contains(github.event.head_commit.message, 'DEPLOY') 
     runs-on: ubuntu-latest
     environment: DEVELOP
     steps:
