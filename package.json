@@ -1,6 +1,6 @@
 {
   "name": "closerclick",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "API NestJS con frontend Vite",
   "scripts": {
     "dev:api": "cd api && npm run start:dev",
