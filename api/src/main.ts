@@ -4,10 +4,13 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { Logger } from '@nestjs/common';
 import { existsSync, readdirSync } from 'fs';
+import { Request, Response } from 'express';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  logger.log('=== INICIANDO SERVIDOR CON CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS ===');
+  logger.log(
+    '=== INICIANDO SERVIDOR CON CONFIGURACIÓN DE ARCHIVOS ESTÁTICOS ===',
+  );
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   // Configurar carpeta pública ANTES de inicializar la aplicación
@@ -35,6 +38,12 @@ async function bootstrap() {
     prefix: '/public/',
   });
 
+  // Servir archivos estáticos en la ruta raíz desde el directorio public
+  app.useStaticAssets(absolutePublicPath, {
+    prefix: '/',
+    index: 'index.html',
+  });
+
   // Habilitar CORS
   app.enableCors({
     origin: '*', // En producción, configurar orígenes específicos
@@ -49,6 +58,8 @@ async function bootstrap() {
 
   logger.log(`Aplicación escuchando en puerto ${port}`);
   logger.log(`WebSocket disponible en ws://localhost:${port}`);
-  logger.log(`Archivos estáticos disponibles en http://localhost:${port}/public/`);
+  logger.log(
+    `Archivos estáticos disponibles en http://localhost:${port}/public/`,
+  );
 }
 void bootstrap();
