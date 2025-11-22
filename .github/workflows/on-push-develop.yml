@@ -80,6 +80,10 @@ jobs:
           echo "Actualizando código desde Git..."
           git pull
 
+          # Refrescar submódulos
+          echo "Refrescando submódulos..."
+          git submodule update --init --recursive
+
           # Instalar dependencias
           echo "Instalando dependencias raíz..."
           npm install
@@ -90,12 +94,9 @@ jobs:
           echo "Instalando dependencias frontend..."
           cd frontend && npm install && cd ..
 
-          # Compilar proyectos
-          echo "Compilando frontend..."
-          cd frontend && npm run build && cd ..
-
-          echo "Compilando API..."
-          cd api && npm run build && cd ..
+          # Compilar proyectos usando el script build único
+          echo "Compilando todo el proyecto (API + frontend + submódulos)..."
+          npm run build
 
           # Verificar que la compilación fue exitosa
           echo "Verificando compilación del API..."
