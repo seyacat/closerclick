@@ -5,6 +5,7 @@ import { join } from 'path';
 import { Logger } from '@nestjs/common';
 import { existsSync, readdirSync } from 'fs';
 import { Request, Response } from 'express';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
@@ -53,6 +54,18 @@ async function bootstrap() {
   // Configurar para obtener IP real del cliente
   app.set('trust proxy', true);
 
+  // Configurar Swagger
+  const config = new DocumentBuilder()
+    .setTitle('CloserClick API')
+    .setDescription('API para el sistema CloserClick - Proxy WebSocket')
+    .setVersion('1.0')
+    .addTag('api', 'Endpoints principales de la API')
+    .addTag('proxy', 'Proxy WebSocket')
+    .build();
+  
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, document);
+
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
 
@@ -61,5 +74,6 @@ async function bootstrap() {
   logger.log(
     `Archivos estáticos disponibles en http://localhost:${port}/public/`,
   );
+  logger.log(`Documentación Swagger disponible en http://localhost:${port}/api`);
 }
 void bootstrap();

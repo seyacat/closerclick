@@ -1,12 +1,14 @@
 {
   "name": "closerclick",
-  "version": "1.0.0",
+  "version": "1.0.3",
   "description": "API NestJS con frontend Vite",
   "scripts": {
     "dev:api": "cd api && npm run start:dev",
     "dev:frontend": "cd frontend && npm run dev",
     "build:api": "cd api && npm run build",
     "build:frontend": "cd frontend && npm run build",
+    "build:submodules": "node scripts/build-submodules.js",
+    "build": "npm run build:api && npm run build:frontend && npm run build:submodules",
     "lint:fix": "cd api && npm run lint && cd ../frontend && npm run lint:fix"
   },
   "keywords": [],
