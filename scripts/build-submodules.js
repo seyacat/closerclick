@@ -14,6 +14,12 @@ function buildSubmodules() {
     console.log(`Created directory: ${FRONTEND_APP_DIR}`);
   }
 
+  // Check if submodules directory exists
+  if (!fs.existsSync(SUBMODULES_DIR)) {
+    console.log('Submodules directory does not exist, skipping build');
+    return;
+  }
+
   // Get all submodule directories
   const submodules = fs.readdirSync(SUBMODULES_DIR, { withFileTypes: true })
     .filter(dirent => dirent.isDirectory())
