@@ -25,6 +25,9 @@ Sistema de proxy que permite acceder a contenido de máquinas privadas mediante 
 git clone <url-del-repositorio>
 cd closerclick
 
+# Inicializar y actualizar submodules
+git submodule update --init
+
 # Instalar dependencias
 npm install
 cd api && npm install
@@ -94,6 +97,7 @@ npm run dev:frontend   # Inicia servidor frontend
 ```bash
 npm run build:api      # Compila backend
 npm run build:frontend # Compila frontend
+npm run build:submodules # Construye submodules
 ```
 
 ### Linting
