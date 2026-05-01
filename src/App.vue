@@ -9,7 +9,11 @@ const compact = ref(localStorage.getItem(VISITED_KEY) === '1')
 
 // PWA install prompt
 let deferredPrompt: any = null
-const canInstall = ref(false)
+const isStandalone = ref(
+  window.matchMedia('(display-mode: standalone)').matches ||
+  (navigator as any).standalone === true
+)
+const canInstall = ref(!isStandalone.value)
 
 const onBeforeInstallPrompt = (e: Event) => {
   e.preventDefault()
@@ -20,14 +24,24 @@ const onBeforeInstallPrompt = (e: Event) => {
 const onAppInstalled = () => {
   deferredPrompt = null
   canInstall.value = false
+  isStandalone.value = true
 }
 
+const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream
+
 const installApp = async () => {
-  if (!deferredPrompt) return
-  deferredPrompt.prompt()
-  await deferredPrompt.userChoice
-  deferredPrompt = null
-  canInstall.value = false
+  if (deferredPrompt) {
+    deferredPrompt.prompt()
+    await deferredPrompt.userChoice
+    deferredPrompt = null
+    canInstall.value = false
+    return
+  }
+  if (isIOS) {
+    alert('Para instalar: pulsa el botón Compartir y luego "Añadir a pantalla de inicio".')
+  } else {
+    alert('Tu navegador todavía no permite la instalación automática. Usa el menú del navegador para instalar la app.')
+  }
 }
 
 const showFullHome = () => {
@@ -75,7 +89,7 @@ onUnmounted(() => {
         </div>
 
         <button
-          v-if="canInstall"
+          v-if="!isStandalone"
           @click="installApp"
           class="install-btn"
         >Instalar App</button>
@@ -338,7 +352,7 @@ onUnmounted(() => {
   .mobile-menu { display: flex; }
   .install-btn {
     margin-left: auto;
-    margin-right: 0.75rem;
+    margin-right: auto;
     padding: 0.4rem 0.9rem;
     font-size: 0.85rem;
   }
