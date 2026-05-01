@@ -93,6 +93,22 @@ onUnmounted(() => {
               class="app-repo"
             >github.com/seyacat/qrshare</a>
           </div>
+          <div class="app-card">
+            <h3>Closer Click Chess</h3>
+            <p>Ajedrez online multijugador. Crea partidas públicas o privadas; el lobby se actualiza en tiempo real con los nuevos eventos del proxy.</p>
+            <a
+              href="https://seyacat.github.io/simple-websocket-chess/"
+              target="_blank"
+              rel="noopener"
+              class="app-button"
+            >Abrir aplicación</a>
+            <a
+              href="https://github.com/seyacat/simple-websocket-chess"
+              target="_blank"
+              rel="noopener"
+              class="app-repo"
+            >github.com/seyacat/simple-websocket-chess</a>
+          </div>
         </div>
       </div>
     </section>
