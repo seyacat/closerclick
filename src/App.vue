@@ -121,7 +121,11 @@ onUnmounted(() => {
 
     <div v-if="compact" class="compact-spacer"></div>
 
-    <section id="aplicaciones" class="section aplicaciones-section">
+    <section
+      id="aplicaciones"
+      class="section aplicaciones-section"
+      :class="{ 'apps-only': compact }"
+    >
       <div class="parallax-bg aplicaciones-bg"></div>
       <div class="section-content">
         <h2 class="section-title">Aplicaciones</h2>
@@ -361,6 +365,17 @@ onUnmounted(() => {
 .cta-button:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); }
 
 .compact-spacer { height: 80px; }
+
+.aplicaciones-section.apps-only .section-title,
+.aplicaciones-section.apps-only > .section-content > .section-text,
+.aplicaciones-section.apps-only .app-card > h3,
+.aplicaciones-section.apps-only .app-card > p {
+  display: none;
+}
+.aplicaciones-section.apps-only .app-card {
+  padding: 1.5rem;
+  gap: 0.75rem;
+}
 .full-home-button {
   margin-top: 3rem;
   background: transparent;
