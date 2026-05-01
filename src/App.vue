@@ -368,7 +368,6 @@ onUnmounted(() => {
 
 .aplicaciones-section.apps-only .section-title,
 .aplicaciones-section.apps-only > .section-content > .section-text,
-.aplicaciones-section.apps-only .app-card > h3,
 .aplicaciones-section.apps-only .app-card > p {
   display: none;
 }
