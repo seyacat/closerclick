@@ -46,6 +46,9 @@ const installApp = async () => {
 
 const showFullHome = () => {
   compact.value = false
+  requestAnimationFrame(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  })
 }
 
 const handleScroll = () => {
