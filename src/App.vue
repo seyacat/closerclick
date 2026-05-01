@@ -2,9 +2,33 @@
 import { ref, onMounted, onUnmounted } from 'vue'
 
 const isScrolled = ref(false)
+const menuOpen = ref(false)
 
 const VISITED_KEY = 'closerclick.visited'
 const compact = ref(localStorage.getItem(VISITED_KEY) === '1')
+
+// PWA install prompt
+let deferredPrompt: any = null
+const canInstall = ref(false)
+
+const onBeforeInstallPrompt = (e: Event) => {
+  e.preventDefault()
+  deferredPrompt = e
+  canInstall.value = true
+}
+
+const onAppInstalled = () => {
+  deferredPrompt = null
+  canInstall.value = false
+}
+
+const installApp = async () => {
+  if (!deferredPrompt) return
+  deferredPrompt.prompt()
+  await deferredPrompt.userChoice
+  deferredPrompt = null
+  canInstall.value = false
+}
 
 const showFullHome = () => {
   compact.value = false
@@ -15,6 +39,7 @@ const handleScroll = () => {
 }
 
 const scrollToSection = (sectionId: string) => {
+  menuOpen.value = false
   if (compact.value && sectionId !== 'aplicaciones') {
     compact.value = false
   }
@@ -28,11 +53,15 @@ const scrollToSection = (sectionId: string) => {
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  window.addEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+  window.addEventListener('appinstalled', onAppInstalled)
   localStorage.setItem(VISITED_KEY, '1')
 })
 
 onUnmounted(() => {
   window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('beforeinstallprompt', onBeforeInstallPrompt)
+  window.removeEventListener('appinstalled', onAppInstalled)
 })
 </script>
 
@@ -44,11 +73,35 @@ onUnmounted(() => {
           <img src="/images/logo.png" alt="Closer Click Logo" class="logo-img" />
           <span class="logo-text">Closer Click</span>
         </div>
-        <div class="nav-links">
+
+        <button
+          v-if="canInstall"
+          @click="installApp"
+          class="install-btn"
+        >Instalar App</button>
+
+        <div class="nav-links desktop-links">
           <a @click="scrollToSection('aplicaciones')" class="nav-link">Aplicaciones</a>
           <a @click="scrollToSection('servicio')" class="nav-link">Servicio</a>
           <a @click="scrollToSection('api')" class="nav-link">API</a>
         </div>
+
+        <button
+          class="hamburger"
+          :class="{ open: menuOpen }"
+          @click="menuOpen = !menuOpen"
+          aria-label="Menú"
+        >
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+
+      <div class="mobile-menu" :class="{ open: menuOpen }">
+        <a @click="scrollToSection('aplicaciones')" class="nav-link">Aplicaciones</a>
+        <a @click="scrollToSection('servicio')" class="nav-link">Servicio</a>
+        <a @click="scrollToSection('api')" class="nav-link">API</a>
       </div>
     </nav>
 
@@ -218,6 +271,76 @@ onUnmounted(() => {
 .nav-link:hover { color: #3498db; }
 .nav-link::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: #3498db; transition: width 0.3s ease; }
 .nav-link:hover::after { width: 100%; }
+
+.install-btn {
+  background: #3498db;
+  color: #fff;
+  border: none;
+  padding: 0.5rem 1.1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 10px rgba(52, 152, 219, 0.35);
+  white-space: nowrap;
+}
+.install-btn:hover { background: #2980b9; transform: translateY(-1px); }
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 26px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.hamburger span {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: #fff;
+  border-radius: 2px;
+  transition: transform 0.3s, opacity 0.3s;
+}
+.hamburger.open span:nth-child(1) { transform: translateY(9px) rotate(45deg); }
+.hamburger.open span:nth-child(2) { opacity: 0; }
+.hamburger.open span:nth-child(3) { transform: translateY(-9px) rotate(-45deg); }
+
+.mobile-menu {
+  display: none;
+  flex-direction: column;
+  background: #2c3e50;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+.mobile-menu.open { max-height: 300px; }
+.mobile-menu .nav-link {
+  padding: 1rem 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #fff;
+}
+.mobile-menu .nav-link::after { display: none; }
+
+@media (max-width: 768px) {
+  .nav-container { padding: 0.75rem 1rem; }
+  .desktop-links { display: none; }
+  .hamburger { display: flex; }
+  .mobile-menu { display: flex; }
+  .install-btn {
+    margin-left: auto;
+    margin-right: 0.75rem;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.85rem;
+  }
+  .logo-text { font-size: 1.1rem; }
+  .logo-img { height: 32px; }
+}
 
 .hero {
   height: 100vh;
