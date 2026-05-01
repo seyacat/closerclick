@@ -4,6 +4,12 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="/images/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Limpia cualquier cache de versiones anteriores del SW
+      if ('caches' in window) {
+        caches.keys().then(keys => keys.forEach(k => caches.delete(k)))
+      }
+    </script>
     <title>Closer Click - Ecosistema de Aplicaciones</title>
   </head>
   <body>

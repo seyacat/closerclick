@@ -3,19 +3,32 @@ import { ref, onMounted, onUnmounted } from 'vue'
 
 const isScrolled = ref(false)
 
+const VISITED_KEY = 'closerclick.visited'
+const compact = ref(localStorage.getItem(VISITED_KEY) === '1')
+
+const showFullHome = () => {
+  compact.value = false
+}
+
 const handleScroll = () => {
   isScrolled.value = window.scrollY > 50
 }
 
 const scrollToSection = (sectionId: string) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' })
+  if (compact.value && sectionId !== 'aplicaciones') {
+    compact.value = false
   }
+  requestAnimationFrame(() => {
+    const element = document.getElementById(sectionId)
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' })
+    }
+  })
 }
 
 onMounted(() => {
   window.addEventListener('scroll', handleScroll)
+  localStorage.setItem(VISITED_KEY, '1')
 })
 
 onUnmounted(() => {
@@ -39,12 +52,12 @@ onUnmounted(() => {
       </div>
     </nav>
 
-    <section class="hero">
+    <section v-if="!compact" class="hero">
       <div class="hero-overlay"></div>
       <div class="hero-content">
         <h1 class="hero-title">Closer Click</h1>
         <p class="hero-subtitle">
-          Un ecosistema de aplicaciones que corren del lado del cliente, 
+          Un ecosistema de aplicaciones que corren del lado del cliente,
           conectándose a través de un proxy descentralizado para gestionar y compartir contenido
         </p>
         <button @click="scrollToSection('aplicaciones')" class="cta-button">
@@ -52,6 +65,8 @@ onUnmounted(() => {
         </button>
       </div>
     </section>
+
+    <div v-if="compact" class="compact-spacer"></div>
 
     <section id="aplicaciones" class="section aplicaciones-section">
       <div class="parallax-bg aplicaciones-bg"></div>
@@ -110,10 +125,16 @@ onUnmounted(() => {
             >github.com/seyacat/simple-websocket-chess</a>
           </div>
         </div>
+
+        <button
+          v-if="compact"
+          @click="showFullHome"
+          class="full-home-button"
+        >Ver home completo</button>
       </div>
     </section>
 
-    <section id="servicio" class="section servicio-section">
+    <section v-if="!compact" id="servicio" class="section servicio-section">
       <div class="parallax-bg servicio-bg"></div>
       <div class="section-content">
         <h2 class="section-title">Servicio</h2>
@@ -142,7 +163,7 @@ onUnmounted(() => {
       </div>
     </section>
 
-    <section id="api" class="section api-section">
+    <section v-if="!compact" id="api" class="section api-section">
       <div class="parallax-bg api-bg"></div>
       <div class="section-content">
         <h2 class="section-title">API</h2>
@@ -215,6 +236,25 @@ onUnmounted(() => {
   border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
 }
 .cta-button:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); }
+
+.compact-spacer { height: 80px; }
+.full-home-button {
+  margin-top: 3rem;
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  padding: 0.85rem 2rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.full-home-button:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: white;
+  transform: translateY(-2px);
+}
 
 .app { background: #1b2533; }
 .section { min-height: 100vh; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
