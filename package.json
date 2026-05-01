@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc -b && vite build",
+    "build": "node scripts/gen-icons.mjs && vue-tsc -b && vite build",
     "preview": "vite preview",
     "lint:fix": "eslint . --ext .vue,.js,.ts,.jsx,.tsx --fix"
   },
@@ -19,6 +19,7 @@
     "@vitejs/plugin-vue": "^6.0.1",
     "@vue/tsconfig": "^0.8.1",
     "eslint": "^9.18.0",
+    "sharp": "^0.34.5",
     "typescript": "~5.9.3",
     "vite": "^7.1.7",
     "vite-plugin-pwa": "^1.2.0",

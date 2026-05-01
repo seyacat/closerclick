@@ -8,7 +8,7 @@ export default defineConfig({
     vue(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['images/favicon.ico', 'images/logo.png'],
+      includeAssets: ['images/favicon.ico'],
       manifest: {
         name: 'Closer Click',
         short_name: 'Closer Click',
@@ -19,22 +19,9 @@ export default defineConfig({
         start_url: './',
         scope: './',
         icons: [
-          {
-            src: 'images/logo.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'images/logo.png',
-            sizes: '512x512',
-            type: 'image/png'
-          },
-          {
-            src: 'images/logo.png',
-            sizes: '512x512',
-            type: 'image/png',
-            purpose: 'any maskable'
-          }
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' }
         ]
       },
       // Sin cache: el SW solo existe para que la app sea instalable como PWA.
