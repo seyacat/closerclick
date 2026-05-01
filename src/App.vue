@@ -77,6 +77,22 @@ onUnmounted(() => {
               class="app-repo"
             >github.com/seyacat/simple-websocket-chat</a>
           </div>
+          <div class="app-card">
+            <h3>QRShare</h3>
+            <p>Transferencia de archivos P2P por WebRTC. El proxy solo descubre los peers; los archivos viajan directamente entre dispositivos. Comparte por QR.</p>
+            <a
+              href="https://seyacat.github.io/qrshare/"
+              target="_blank"
+              rel="noopener"
+              class="app-button"
+            >Abrir aplicación</a>
+            <a
+              href="https://github.com/seyacat/qrshare"
+              target="_blank"
+              rel="noopener"
+              class="app-repo"
+            >github.com/seyacat/qrshare</a>
+          </div>
         </div>
       </div>
     </section>
