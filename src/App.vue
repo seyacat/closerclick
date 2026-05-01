@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const scrollY = ref(0)
 const isScrolled = ref(false)
 
 const handleScroll = () => {
-  scrollY.value = window.scrollY
   isScrolled.value = window.scrollY > 50
 }
 
@@ -41,7 +39,7 @@ onUnmounted(() => {
       </div>
     </nav>
 
-    <section class="hero" :style="{ transform: `translateY(${scrollY * 0.5}px)` }">
+    <section class="hero">
       <div class="hero-overlay"></div>
       <div class="hero-content">
         <h1 class="hero-title">Closer Click</h1>
@@ -56,75 +54,85 @@ onUnmounted(() => {
     </section>
 
     <section id="aplicaciones" class="section aplicaciones-section">
-      <div class="parallax-bg aplicaciones-bg" :style="{ transform: `translateY(${scrollY * 0.3}px)` }"></div>
+      <div class="parallax-bg aplicaciones-bg"></div>
       <div class="section-content">
         <h2 class="section-title">Aplicaciones</h2>
         <p class="section-text">
-          Closer Click potencia cualquier aplicación de intermediarios con nuestra infraestructura descentralizada. 
-          Desde plataformas de e-commerce hasta servicios de transporte y delivery.
+          Aplicaciones que usan el proxy de Closer Click.
         </p>
-        <div class="features-grid">
-          <div class="feature-card">
-            <h3>E-commerce</h3>
-            <p>Plataformas de venta online con comunicación directa</p>
-          </div>
-          <div class="feature-card">
-            <h3>Servicios</h3>
-            <p>Delivery, transporte y servicios profesionales</p>
-          </div>
-          <div class="feature-card">
-            <h3>Marketplaces</h3>
-            <p>Mercados digitales sin intermediarios centralizados</p>
+        <div class="apps-grid">
+          <div class="app-card">
+            <h3>Closer Click Chat</h3>
+            <p>Chat en tiempo real con salas públicas, descubrimiento de canales y mensajería punto a punto sobre el proxy WebSocket.</p>
+            <a
+              href="https://seyacat.github.io/simple-websocket-chat/"
+              target="_blank"
+              rel="noopener"
+              class="app-button"
+            >Abrir aplicación</a>
+            <a
+              href="https://github.com/seyacat/simple-websocket-chat"
+              target="_blank"
+              rel="noopener"
+              class="app-repo"
+            >github.com/seyacat/simple-websocket-chat</a>
           </div>
         </div>
       </div>
     </section>
 
     <section id="servicio" class="section servicio-section">
-      <div class="parallax-bg servicio-bg" :style="{ transform: `translateY(${scrollY * 0.4}px)` }"></div>
+      <div class="parallax-bg servicio-bg"></div>
       <div class="section-content">
         <h2 class="section-title">Servicio</h2>
         <p class="section-text">
-          Nuestro servicio de proxy descentralizado garantiza comunicación segura y eficiente 
-          entre todas las aplicaciones del ecosistema.
+          Comunicación por WebSocket ligero que enruta mensajes
+          entre clientes mediante tokens cortos, sin almacenar conversaciones ni requerir cuentas.
         </p>
         <div class="service-features">
           <div class="service-item">
-            <h3>Comunicación Segura</h3>
-            <p>Conexiones encriptadas punto a punto</p>
+            <h3>Tokens efímeros</h3>
+            <p>Al conectar se asigna un token corto (4 caracteres). Sirve como dirección lógica del cliente y se libera al desconectar.</p>
           </div>
           <div class="service-item">
-            <h3>Alta Disponibilidad</h3>
-            <p>Infraestructura redundante continua</p>
+            <h3>Canales públicos</h3>
+            <p>Cualquier cliente puede publicarse en un canal nombrado, listarlo o consultar el número de miembros. TTL de 20 min y hasta 100 tokens por canal.</p>
           </div>
           <div class="service-item">
-            <h3>Escalabilidad</h3>
-            <p>Adaptable a cualquier volumen</p>
+            <h3>Firma ECDSA P-256</h3>
+            <p>Las operaciones sobre canales se firman con clave pública JWK (curva P-256). El proxy verifica la firma antes de aceptar publish/unpublish/list.</p>
+          </div>
+          <div class="service-item">
+            <h3>Sin estado persistente</h3>
+            <p>El proxy no guarda mensajes en disco ni tiene base de datos. Solo memoria viva: conexiones, pares activos y entradas de canal.</p>
           </div>
         </div>
       </div>
     </section>
 
     <section id="api" class="section api-section">
-      <div class="parallax-bg api-bg" :style="{ transform: `translateY(${scrollY * 0.2}px)` }"></div>
+      <div class="parallax-bg api-bg"></div>
       <div class="section-content">
         <h2 class="section-title">API</h2>
         <p class="section-text">
-          Nuestra API proporciona acceso programático a toda la funcionalidad del ecosistema. 
-          Desarrolla aplicaciones personalizadas que se integren perfectamente.
+          Una sola conexión WebSocket. Mensajes JSON. Sin endpoints HTTP, sin SDK obligatorio.
         </p>
         <div class="api-features">
           <div class="api-item">
-            <h3>RESTful Endpoints</h3>
-            <p>Interfaz estándar para integración</p>
+            <h3>Mensaje directo</h3>
+            <p><code>{ to: ["TKN1","TKN2"], message: ... }</code> — entrega a uno o varios tokens. El receptor recibe <code>{ type: "message", from, message }</code>.</p>
           </div>
           <div class="api-item">
-            <h3>WebSocket Real-time</h3>
-            <p>Comunicación en tiempo real</p>
+            <h3>publish / unpublish</h3>
+            <p><code>{ type: "publish", channel: { data, signature } }</code> hace visible al cliente en un canal. Notifica join/leave a los demás miembros.</p>
           </div>
           <div class="api-item">
-            <h3>Documentación Completa</h3>
-            <p>Guías detalladas para desarrollo</p>
+            <h3>list / list_channels / channel_count</h3>
+            <p>Descubrimiento: tokens en un canal, canales por prefijo, conteo. Útil para construir lobbies o salas públicas.</p>
+          </div>
+          <div class="api-item">
+            <h3>disconnect</h3>
+            <p><code>{ type: "disconnect", target }</code> rompe el par lógico con otro token y notifica a ambas partes.</p>
           </div>
         </div>
       </div>
@@ -143,26 +151,28 @@ onUnmounted(() => {
 .app { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow-x: hidden; }
 
 .navbar {
-  position: fixed; top: 0; width: 100%; background: rgba(255, 255, 255, 0.95);
+  position: fixed; top: 0; width: 100%; background: #2c3e50;
   backdrop-filter: blur(10px); z-index: 1000; transition: all 0.3s ease;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
 }
-.navbar.scrolled { background: rgba(255, 255, 255, 0.98); box-shadow: 0 2px 20px rgba(0, 0, 0, 0.1); }
+.navbar.scrolled { background: #2c3e50; box-shadow: 0 2px 20px rgba(0, 0, 0, 0.3); }
 .nav-container { max-width: 1200px; margin: 0 auto; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; }
 .logo { display: flex; align-items: center; gap: 0.5rem; }
 .logo-img { height: 40px; width: auto; }
-.logo-text { font-size: 1.5rem; font-weight: bold; color: #2c3e50; }
+.logo-text { font-size: 1.5rem; font-weight: bold; color: #ffffff; }
 .nav-links { display: flex; gap: 2rem; }
-.nav-link { color: #2c3e50; text-decoration: none; font-weight: 500; cursor: pointer; transition: color 0.3s ease; position: relative; }
+.nav-link { color: #ffffff; text-decoration: none; font-weight: 500; cursor: pointer; transition: color 0.3s ease; position: relative; }
 .nav-link:hover { color: #3498db; }
 .nav-link::after { content: ''; position: absolute; bottom: -5px; left: 0; width: 0; height: 2px; background: #3498db; transition: width 0.3s ease; }
 .nav-link:hover::after { width: 100%; }
 
 .hero {
-  height: 100vh; 
+  height: 100vh;
   background: linear-gradient(rgba(44, 62, 80, 0.7), rgba(44, 62, 80, 0.7)),
-              url('/images/oficina/work-4166471_1920.png') center/cover;
+              url('/images/oficina/desk-593327_1920.jpg') center/cover;
   display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 95%, transparent 100%);
+          mask-image: linear-gradient(to bottom, #000 0%, #000 95%, transparent 100%);
 }
 .hero-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.3); }
 .hero-content { text-align: center; color: white; z-index: 2; max-width: 800px; padding: 0 2rem; }
@@ -174,22 +184,26 @@ onUnmounted(() => {
 }
 .cta-button:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); }
 
+.app { background: #1b2533; }
 .section { min-height: 100vh; position: relative; display: flex; align-items: center; justify-content: center; overflow: hidden; }
 .parallax-bg {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 120%;
-  z-index: -1;
+  height: 100%;
+  z-index: 0;
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 95%, transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 95%, transparent 100%);
 }
+.section-content { position: relative; }
 .section-content { max-width: 1000px; padding: 4rem 2rem; text-align: center; color: white; z-index: 2; }
 .section-title { font-size: 3rem; font-weight: 700; margin-bottom: 2rem; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); }
 .section-text { font-size: 1.2rem; line-height: 1.8; margin-bottom: 3rem; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); }
 
 .aplicaciones-bg {
   background: linear-gradient(rgba(52, 73, 94, 0.8), rgba(52, 73, 94, 0.8)),
-              url('/images/comunicacion/media-998990_1920.jpg');
+              url('/images/comunicacion/social-3408791_1920.jpg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -200,13 +214,15 @@ onUnmounted(() => {
 .feature-card h3 { font-size: 1.5rem; margin-bottom: 1rem; color: #3498db; }
 .feature-card p { line-height: 1.6; }
 
-.servicio-section {
-  background: linear-gradient(rgba(44, 62, 80, 0.8), rgba(44, 62, 80, 0.8)),
-              url('/images/oficina/building-4803602_1920.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
+.apps-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 2rem; margin-top: 3rem; }
+.app-card { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 2rem; border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.2); transition: transform 0.3s ease; display: flex; flex-direction: column; align-items: center; text-align: center; }
+.app-card:hover { transform: translateY(-5px); }
+.app-card h3 { font-size: 1.5rem; margin-bottom: 1rem; color: #3498db; }
+.app-card p { line-height: 1.6; margin-bottom: 1.5rem; }
+.app-button { background: #3498db; color: white; border: none; padding: 0.75rem 2rem; font-size: 1rem; font-weight: 600; border-radius: 50px; cursor: pointer; transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3); text-decoration: none; display: inline-block; }
+.app-button:hover { background: #2980b9; transform: translateY(-2px); box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4); }
+.app-repo { display: block; margin-top: 0.85rem; color: rgba(255, 255, 255, 0.85); font-size: 0.9rem; text-decoration: none; word-break: break-all; }
+.app-repo:hover { color: #fff; text-decoration: underline; }
 
 .servicio-bg {
   background: linear-gradient(rgba(44, 62, 80, 0.8), rgba(44, 62, 80, 0.8)),
@@ -218,18 +234,12 @@ onUnmounted(() => {
 .service-features { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem; margin-top: 3rem; }
 .service-item { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 1.5rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); }
 .service-item h3 { color: #2ecc71; margin-bottom: 1rem; font-size: 1.3rem; }
-
-.api-section {
-  background: linear-gradient(rgba(41, 128, 185, 0.8), rgba(41, 128, 185, 0.8)),
-              url('/images/oficina/desk-593327_1920.jpg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-}
+.service-item p { line-height: 1.55; }
+.service-item code, .api-item code, .section-text code { background: rgba(0,0,0,0.35); padding: 0.1rem 0.4rem; border-radius: 4px; font-family: 'Consolas','Monaco',monospace; font-size: 0.9em; }
 
 .api-bg {
   background: linear-gradient(rgba(41, 128, 185, 0.8), rgba(41, 128, 185, 0.8)),
-              url('/images/oficina/desk-593327_1920.jpg');
+              url('/images/oficina/work-4166471_1920.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -238,7 +248,7 @@ onUnmounted(() => {
 .api-item { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); padding: 1.5rem; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.2); }
 .api-item h3 { color: #e74c3c; margin-bottom: 1rem; font-size: 1.3rem; }
 
-.footer { background: #2c3e50; color: white; text-align: center; padding: 2rem; }
+.footer { background: #2c3e50; color: white; text-align: center; padding: 2rem; -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 100%); mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 100%); }
 .footer-content { max-width: 1200px; margin: 0 auto; }
 
 @media (max-width: 768px) {
