@@ -427,7 +427,7 @@ onUnmounted(() => {
           mask-image: linear-gradient(to bottom, transparent 0%, #000 5%, #000 95%, transparent 100%);
 }
 .section-content { position: relative; }
-.section-content { max-width: 1000px; padding: 4rem 2rem; text-align: center; color: white; z-index: 2; }
+.section-content { width: 100%; max-width: 1000px; padding: 4rem 2rem; text-align: center; color: white; z-index: 2; box-sizing: border-box; }
 .section-title { font-size: 3rem; font-weight: 700; margin-bottom: 2rem; text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); }
 .section-text { font-size: 1.2rem; line-height: 1.8; margin-bottom: 3rem; text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5); }
 
