@@ -392,6 +392,10 @@ onUnmounted(() => {
   padding: 1.5rem;
   gap: 0.75rem;
 }
+.aplicaciones-section.apps-only .apps-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
 .full-home-button {
   margin-top: 3rem;
   background: transparent;
