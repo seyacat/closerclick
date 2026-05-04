@@ -173,8 +173,14 @@ onUnmounted(() => {
               href="https://seyacat.github.io/closerclick_messenger/"
               target="_blank"
               rel="noopener"
-              class="app-link"
-            >Abrir Messenger →</a>
+              class="app-button"
+            >Abrir aplicación</a>
+            <a
+              href="https://github.com/seyacat/closerclick_messenger"
+              target="_blank"
+              rel="noopener"
+              class="app-repo"
+            >github.com/seyacat/closerclick_messenger</a>
           </div>
           <div class="app-card">
             <h3>QRShare</h3>
