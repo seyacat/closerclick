@@ -152,7 +152,7 @@ onUnmounted(() => {
         <div class="apps-grid">
           <div class="app-card">
             <h3>Closer Click Chat</h3>
-            <p>Chat en tiempo real con salas públicas, descubrimiento de canales y mensajería punto a punto sobre el proxy WebSocket.</p>
+            <p>Chat en tiempo real con salas públicas, descubrimiento de canales y mensajería P2P por WebRTC con caída automática al proxy WebSocket.</p>
             <a
               href="https://seyacat.github.io/simple-websocket-chat/"
               target="_blank"
@@ -184,7 +184,7 @@ onUnmounted(() => {
           </div>
           <div class="app-card">
             <h3>Closer Click Chess</h3>
-            <p>Ajedrez online multijugador. Crea partidas públicas o privadas; el lobby se actualiza en tiempo real con los nuevos eventos del proxy.</p>
+            <p>Ajedrez online multijugador con transporte P2P por WebRTC cuando es posible. Crea partidas públicas o privadas; el lobby se actualiza en tiempo real con los eventos del proxy.</p>
             <a
               href="https://seyacat.github.io/simple-websocket-chess/"
               target="_blank"
@@ -232,6 +232,10 @@ onUnmounted(() => {
           <div class="service-item">
             <h3>Sin estado persistente</h3>
             <p>El proxy no guarda mensajes en disco ni tiene base de datos. Solo memoria viva: conexiones, pares activos y entradas de canal.</p>
+          </div>
+          <div class="service-item">
+            <h3>WebRTC con fallback al proxy</h3>
+            <p>El cliente intenta abrir un <code>RTCDataChannel</code> con cada peer (señalización por el propio proxy, STUN público). Si la negociación tiene éxito los mensajes viajan P2P; si falla, siguen por el proxy de forma transparente.</p>
           </div>
         </div>
       </div>
