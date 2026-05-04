@@ -183,6 +183,22 @@ onUnmounted(() => {
             >github.com/seyacat/closerclick_messenger</a>
           </div>
           <div class="app-card">
+            <h3>Messenger Extension (Chrome)</h3>
+            <p>Extensión Chrome (MV3) que muestra un overlay con notificaciones de mensajes en cualquier pestaña y un popup para componer DMs. Comparte identidad y contactos con la web messenger usando el vault <code>id.closer.click</code>.</p>
+            <a
+              href="https://github.com/seyacat/closerclick_messenger_extension"
+              target="_blank"
+              rel="noopener"
+              class="app-button"
+            >Ver instalación</a>
+            <a
+              href="https://github.com/seyacat/closerclick_messenger_extension"
+              target="_blank"
+              rel="noopener"
+              class="app-repo"
+            >github.com/seyacat/closerclick_messenger_extension</a>
+          </div>
+          <div class="app-card">
             <h3>QRShare</h3>
             <p>Transferencia de archivos P2P por WebRTC. El proxy solo descubre los peers; los archivos viajan directamente entre dispositivos. Comparte por QR.</p>
             <a
