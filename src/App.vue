@@ -167,6 +167,16 @@ onUnmounted(() => {
             >github.com/seyacat/simple-websocket-chat</a>
           </div>
           <div class="app-card">
+            <h3>Closer Click Messenger</h3>
+            <p>Mensajería P2P 1-a-1 con cifrado E2E (ECDH+AES-GCM), contactos compartidos entre apps del ecosistema, histórico local con poda automática y ranking integrado. Instalable como PWA.</p>
+            <a
+              href="https://seyacat.github.io/closerclick_messenger/"
+              target="_blank"
+              rel="noopener"
+              class="app-link"
+            >Abrir Messenger →</a>
+          </div>
+          <div class="app-card">
             <h3>QRShare</h3>
             <p>Transferencia de archivos P2P por WebRTC. El proxy solo descubre los peers; los archivos viajan directamente entre dispositivos. Comparte por QR.</p>
             <a
