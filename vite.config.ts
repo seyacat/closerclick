@@ -37,8 +37,4 @@ export default defineConfig({
     })
   ],
   base: './',
-  build: {
-    outDir: '../api/src/public',
-    emptyOutDir: true,
-  },
 })
