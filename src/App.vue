@@ -168,7 +168,7 @@ onUnmounted(() => {
           </div>
           <div class="app-card">
             <h3>Closer Click Messenger</h3>
-            <p>Mensajería P2P 1-a-1 con cifrado E2E (ECDH+AES-GCM), contactos compartidos entre apps del ecosistema, histórico local con poda automática y ranking integrado. Instalable como PWA.</p>
+            <p>Mensajería 1-a-1 con cifrado E2E (ECDH+AES-GCM), contactos compartidos entre apps del ecosistema, histórico local con poda automática, mensajes offline (proxy retiene 24 h) y ranking integrado. Instalable como PWA.</p>
             <a
               href="https://seyacat.github.io/closerclick_messenger/"
               target="_blank"
@@ -246,6 +246,10 @@ onUnmounted(() => {
           <div class="service-item">
             <h3>WebRTC con fallback al proxy</h3>
             <p>El cliente intenta abrir un <code>RTCDataChannel</code> con cada peer (señalización por el propio proxy, STUN público). Si la negociación tiene éxito los mensajes viajan P2P; si falla, siguen por el proxy de forma transparente.</p>
+          </div>
+          <div class="service-item">
+            <h3>Cola offline 24 h</h3>
+            <p>Tras un <code>identify</code> firmado, los clientes pueden direccionar mensajes por <code>to_publickey</code>. Si el destinatario está offline, el proxy retiene en memoria hasta 24 h (200 msgs / 1 MB por pubkey) y los entrega cuando vuelve a identificarse. Tras 24 h se descartan.</p>
           </div>
         </div>
       </div>
