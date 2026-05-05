@@ -168,7 +168,7 @@ onUnmounted(() => {
           </div>
           <div class="app-card">
             <h3>Closer Click Messenger</h3>
-            <p>Mensajería 1-a-1 con cifrado E2E (ECDH+AES-GCM), contactos compartidos entre apps del ecosistema, histórico local con poda automática, mensajes offline (proxy retiene 24 h) y ranking integrado. Instalable como PWA.</p>
+            <p>Mensajería 1-a-1 con cifrado E2E (ECDH+AES-GCM), contactos compartidos entre apps del ecosistema, hilos persistidos en <code>store.closer.click</code> (mismos mensajes en web + extensión), mensajes offline (proxy retiene 24 h) y ranking integrado. PWA instalable + extensión Chrome MV3 reusando la PWA via iframe.</p>
             <a
               href="https://seyacat.github.io/closerclick_messenger/"
               target="_blank"
@@ -181,22 +181,6 @@ onUnmounted(() => {
               rel="noopener"
               class="app-repo"
             >github.com/seyacat/closerclick_messenger</a>
-          </div>
-          <div class="app-card">
-            <h3>Messenger Extension (Chrome)</h3>
-            <p>Extensión Chrome (MV3) que muestra un overlay con notificaciones de mensajes en cualquier pestaña y un popup para componer DMs. Comparte identidad y contactos con la web messenger usando el vault <code>id.closer.click</code>.</p>
-            <a
-              href="https://github.com/seyacat/closerclick_messenger_extension"
-              target="_blank"
-              rel="noopener"
-              class="app-button"
-            >Ver instalación</a>
-            <a
-              href="https://github.com/seyacat/closerclick_messenger_extension"
-              target="_blank"
-              rel="noopener"
-              class="app-repo"
-            >github.com/seyacat/closerclick_messenger_extension</a>
           </div>
           <div class="app-card">
             <h3>QRShare</h3>
@@ -270,8 +254,12 @@ onUnmounted(() => {
             <p>El cliente intenta abrir un <code>RTCDataChannel</code> con cada peer (señalización por el propio proxy, STUN público). Si la negociación tiene éxito los mensajes viajan P2P; si falla, siguen por el proxy de forma transparente.</p>
           </div>
           <div class="service-item">
-            <h3>Cola offline 24 h</h3>
-            <p>Tras un <code>identify</code> firmado, los clientes pueden direccionar mensajes por <code>to_publickey</code>. Si el destinatario está offline, el proxy retiene en memoria hasta 24 h (200 msgs / 1 MB por pubkey) y los entrega cuando vuelve a identificarse. Tras 24 h se descartan.</p>
+            <h3>Cola offline 24 h + multi-instancia</h3>
+            <p>Tras un <code>identify</code> firmado, los clientes pueden direccionar mensajes por <code>to_publickey</code>. Si hay varias instancias online (web + extensión + segunda pestaña…) el proxy hace <strong>fan-out</strong> a todas. Si todas están offline, retiene en memoria hasta 24 h (200 msgs / 1 MB por pubkey) y entrega al primer reconnect.</p>
+          </div>
+          <div class="service-item">
+            <h3>Vaults compartidos</h3>
+            <p>Dos subdominios estáticos guardan estado del usuario en su propio <code>localStorage</code> y son accedidos por todas las apps vía iframe + <code>postMessage</code>: <code>id.closer.click</code> (claves, contactos, ratings) y <code>store.closer.click</code> (hilos de DMs). Mismos contactos y mismos mensajes en cualquier app del ecosistema dentro del mismo navegador.</p>
           </div>
         </div>
       </div>
