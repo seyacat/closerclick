@@ -22,7 +22,7 @@ await sharp({
     width: 512,
     height: 512,
     channels: 4,
-    background: { r: 27, g: 37, b: 51, alpha: 1 }
+    background: { r: 255, g: 255, b: 255, alpha: 1 }
   }
 })
   .composite([{ input: await sharp(src).resize(410, 410).png().toBuffer(), gravity: 'center' }])
