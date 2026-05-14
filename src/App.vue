@@ -214,6 +214,22 @@ onUnmounted(() => {
               class="app-repo"
             >github.com/seyacat/simple-websocket-chess</a>
           </div>
+          <div class="app-card">
+            <h3>GridGame</h3>
+            <p>Sandbox multijugador cooperativo en un grid. Mundo subjetivo: cada peer hostea lo que crea y carga el entorno alrededor a medida que se mueve. Ground procedural determinista, props/items/personajes/enemigos programables vía DSL, resolución de conflictos por reputación (web-of-trust de identity) y recencia. Loot no-exclusivo, summon de enemigos por turnos ponderados por reputación.</p>
+            <a
+              href="https://seyacat.github.io/gridgame/"
+              target="_blank"
+              rel="noopener"
+              class="app-button"
+            >Abrir aplicación</a>
+            <a
+              href="https://github.com/seyacat/gridgame"
+              target="_blank"
+              rel="noopener"
+              class="app-repo"
+            >github.com/seyacat/gridgame</a>
+          </div>
         </div>
 
         <button
